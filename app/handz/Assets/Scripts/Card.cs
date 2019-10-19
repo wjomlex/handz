@@ -6,10 +6,12 @@ public class Card : IComparable<Card>
 {
     public Strain suit;
     public int rank;
+    public bool played;
 
     public Card(Strain suit, int rank) {
         this.suit = suit;
         this.rank = rank;
+        played = false;
     }
 
     public int CompareTo(Card that) {

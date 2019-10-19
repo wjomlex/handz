@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 public class AI
 {
@@ -7,14 +8,14 @@ public class AI
     // TODO: We'll need the auction as well in the future
     public static int SelectCard(List<Trick> tricks, Trick currentTrick, DummyPosition dummyPosition, List<Card> myHand, List<Card> visibleHand, Strain contractStrain, int contractLevel) {
         // State of the art AI: play a random legal card!
-        Random rnd = new Random();
+        System.Random rnd = new System.Random();
 
-        // Look for cards in suit led. Empty if we're first to lead.
+        // Look for unplayed cards in suit led. Empty if we're first to lead.
         List<int> cardsInSuitLed = new List<int>(); 
         if (currentTrick.cards.Count > 0) {
             for (int i=0;i < myHand.Count;i++) {
                 Card card = myHand[i];
-                if (card.suit == currentTrick.cards[0].suit) {
+                if (card.suit == currentTrick.cards[0].suit && !card.played) {
                     cardsInSuitLed.Add(i);
                 }
             }
@@ -25,6 +26,12 @@ public class AI
             return cardsInSuitLed[rnd.Next(cardsInSuitLed.Count)];
         }
 
-        return rnd.Next(myHand.Count);
+        // Otherwise play first legal card
+        for (int i=0;i < myHand.Count;i++) {
+            if (!myHand[i].played) return i;
+        }
+
+        Debug.Log("No legal cards found!");
+        return 0;
     }
 }

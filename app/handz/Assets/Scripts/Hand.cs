@@ -32,8 +32,10 @@ public class Hand : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+        List<Card> hand = Registry.hands[direction];
+        for (int i = 0; i < 13; i++) {
+            if (hand[i].played) cardImages[i].color = new Color(0f, 0f, 0f, 0.2f);
+        }
     }
 }

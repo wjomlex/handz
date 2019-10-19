@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TableController : MonoBehaviour
 {
@@ -33,9 +34,37 @@ public class TableController : MonoBehaviour
         );
 
         Card card = currentHand[cardIdx];
+        PlayCard(card);
+    }
+
+    // Unity doesn't allow enum args in the editor, and only allows 1 argument... WAT
+    // Format: Direction letter and then index, so N0 through S13
+    public void HandlePlayerPlay(string play) {
+        char dir = play[0];
+        int index = int.Parse(play.Substring(1));
+        Direction direction = Direction.WEST;
+        if (dir == 'N') direction = Direction.NORTH;
+        else if (dir == 'S') direction = Direction.SOUTH;
+        else if (dir == 'E') direction = Direction.EAST;
+
+        // Don't let people play out of turn
+        if (Registry.currentPlayer != direction) return;
+
+        // Don't let people play an already-played card
+        List<Card> hand = Registry.hands[direction];
+        Card card = hand[index];
+        if (card.played) return;
+
+        // Don't let people play an illegal card
+        if (!IsLegalCard(card, hand)) return;
+
+        PlayCard(card);
+    }
+
+    private void PlayCard(Card card) {
         Debug.Log(Registry.currentPlayer + " PLAYS " + card.ToString());
 
-        currentHand.RemoveAt(cardIdx);
+        card.played = true;
         Registry.currentTrick.Add(card);
         if (Registry.currentTrick.cards.Count == 4) {
             Registry.tricks.Add(Registry.currentTrick);
@@ -44,8 +73,17 @@ public class TableController : MonoBehaviour
         } else {
             Registry.currentPlayer = NextPlayer(Registry.currentPlayer);
         }
-
         timeSinceLastPlay = 0;
+    }
+
+    bool IsLegalCard (Card card, List<Card> hand) {
+        if (Registry.currentTrick.cards.Count == 0) return true;
+        Strain ledSuit = Registry.currentTrick.cards[0].suit;
+        if (ledSuit == card.suit) return true;
+        foreach (Card c in hand) {
+            if (!c.played && c.suit == ledSuit) return false;
+        }
+        return true;
     }
 
     public bool CurrentPlayerHandledByAI() {
@@ -120,5 +158,9 @@ public class TableController : MonoBehaviour
         }
 
         return currentPlayer == dummy ? declarer : dummy;
+    }
+
+    public void LoadMainMenu() {
+        SceneManager.LoadScene("Main");
     }
 }
